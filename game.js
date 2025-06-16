@@ -73,6 +73,7 @@ function setup() {
   const canvas = createCanvas(320, 480);
   canvas.id('gameCanvas');
   canvas.parent(document.body);
+  textFont('Press Start 2P');
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   restartGame();
   createCity();
@@ -338,7 +339,7 @@ function togglePause() {
 }
 
 function drawScore() {
-  fill('#000');
+  fill('#0f0');
   noStroke();
   textSize(24);
   textStyle(BOLD);
@@ -374,6 +375,7 @@ function draw() {
     textSize(32);
     textAlign(CENTER, CENTER);
     text('PAUSED', width / 2, height / 2);
+    drawScore();
   }
 }
 
