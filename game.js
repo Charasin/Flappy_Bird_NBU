@@ -34,13 +34,14 @@ let score = 0;
 const buildings = [];
 let paused = false;
 
-function playSound(freq, duration) {
+function playSound(freq, duration, volume = 1) {
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
   osc.type = 'square';
   osc.frequency.value = freq;
   osc.connect(gain);
   gain.connect(audioCtx.destination);
+  gain.gain.setValueAtTime(volume, audioCtx.currentTime);
   osc.start();
   osc.stop(audioCtx.currentTime + duration);
 }
@@ -67,7 +68,7 @@ function playVictory() {
 }
 
 function playLose() {
-  playSound(220, 0.3);
+  playSound(220, 0.3, 0.5);
 }
 
 function playPauseMusic() {
@@ -81,7 +82,7 @@ function playPauseMusic() {
     osc.frequency.value = notes[i % notes.length];
     osc.connect(gain);
     gain.connect(audioCtx.destination);
-    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.14, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
     osc.start();
     osc.stop(audioCtx.currentTime + 0.3);
