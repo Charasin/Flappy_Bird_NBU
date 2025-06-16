@@ -179,6 +179,29 @@ function createCity() {
   }
 }
 
+const citySpeed = 1;
+
+function updateCity() {
+  buildings.forEach(b => {
+    b.x -= citySpeed;
+  });
+
+  while (buildings.length && buildings[0].x + buildings[0].w < 0) {
+    buildings.shift();
+  }
+
+  let lastX = buildings.length
+    ? buildings[buildings.length - 1].x + buildings[buildings.length - 1].w
+    : 0;
+  while (lastX < width) {
+    const w = random(20, 40);
+    const h = random(40, 100);
+    const x = lastX + random(5, 15);
+    buildings.push({ x, w, h });
+    lastX = x + w;
+  }
+}
+
 function updateClouds() {
   clouds.forEach(cloud => {
     cloud.x -= 0.6; // move clouds faster
@@ -204,6 +227,21 @@ function drawCity() {
   noStroke();
   buildings.forEach(b => {
     rect(b.x, height - 40 - b.h, b.w, b.h);
+
+    // windows
+    const windowW = 4;
+    const windowH = 6;
+    const startX = b.x + 2;
+    const startY = height - 40 - b.h + 2;
+    fill('#ffd861');
+    for (let x = startX; x + windowW < b.x + b.w - 2; x += windowW + 3) {
+      for (let y = startY; y + windowH < height - 42; y += windowH + 4) {
+        if (random() < 0.7) {
+          rect(x, y, windowW, windowH);
+        }
+      }
+    }
+    fill('#666');
   });
 }
 
@@ -231,28 +269,22 @@ function drawPipes() {
     grad.addColorStop(0.5, '#ffffff');
     grad.addColorStop(1, colorVal);
     ctx.fillStyle = grad;
-    ctx.strokeStyle = '#000';
-    ctx.lineWidth = 1;
 
     ctx.beginPath();
     ctx.rect(pipe.x, 0, pipeWidth, pipe.top - radius);
     ctx.fill();
-    ctx.stroke();
 
     ctx.beginPath();
     ctx.arc(pipe.x + radius, pipe.top - radius, radius, Math.PI, Math.PI * 2);
     ctx.fill();
-    ctx.stroke();
 
     ctx.beginPath();
     ctx.arc(pipe.x + radius, pipe.bottom + radius, radius, 0, Math.PI);
     ctx.fill();
-    ctx.stroke();
 
     ctx.beginPath();
     ctx.rect(pipe.x, pipe.bottom + radius, pipeWidth, height - pipe.bottom - radius);
     ctx.fill();
-    ctx.stroke();
 
     ctx.fillStyle = 'rgba(255,255,255,0.3)';
     ctx.fillRect(pipe.x + pipeWidth * 0.15, 0, pipeWidth * 0.2, pipe.top - radius);
@@ -270,7 +302,7 @@ function updatePipes() {
       playVictory();
     }
   }
-  if (frame % spawnInterval === 0) {
+  if (frame % spawnInterval === 0 && frame > 0) {
     createPipe();
   }
 }
@@ -316,16 +348,17 @@ function drawScore() {
 function draw() {
   clear();
   background('#70c5ce');
-  drawCity();
-  drawPlains();
   if (flapAnimationFrames > 0) {
     flapAnimationFrames--;
   }
   if (!paused) {
     updateClouds();
+    updateCity();
     updateBird();
     updatePipes();
   }
+  drawCity();
+  drawPlains();
   drawClouds();
   drawBird();
   drawPipes();
