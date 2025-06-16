@@ -14,6 +14,7 @@ This version adds a distant city skyline, grassy plains and glossy 3D pipes for 
 * Press `P` or use the on-screen button to pause and resume the game.
 * The game restarts automatically when the bird collides with a pipe or the
   ground.
+* When paused a short tune plays until the game is resumed.
 * Background clouds move across the sky and are rendered with round overlapping
   circles for a more natural look. Pipe speed has been increased for a faster
   game pace and colors of the pipes change as your score grows.
@@ -35,3 +36,11 @@ frame used by the game loop.
 
 This repository contains only the basic game files and does not require
 additional dependencies.
+
+## Recent Updates
+
+* Bird now also loses when touching the ground.
+* Score display is black and 30% larger for better visibility.
+* A short melody plays while the game is paused.
+
+Latest changes introduced in commit `142741e`.
