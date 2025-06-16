@@ -1,14 +1,14 @@
-// Example exit functionality for the Flappy Bird game
-// Call exitGame() to stop the animation loop.
+// Примерна функция за изход за играта Flappy Bird
+// Извикайте exitGame() да спрете анимационния цикъл.
 
 let animationId;
 
 function gameLoop() {
-  // ... existing game update and drawing logic ...
+  // ... съществуващата логика за обновяване и рисуване на играта ...
   animationId = requestAnimationFrame(gameLoop);
 }
 
 function exitGame() {
   cancelAnimationFrame(animationId);
-  // Additional cleanup could be done here, such as removing event listeners
+  // Тук може да се извърши допълнително почистване, например премахване на слушатели на събития
 }
