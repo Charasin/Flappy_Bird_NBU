@@ -341,9 +341,10 @@ function togglePause() {
 function drawScore() {
   fill('#0f0');
   noStroke();
-  textSize(24);
+  textSize(32); // larger score display
   textStyle(BOLD);
-  text(`Score: ${score}`, 10, 25);
+  textAlign(LEFT, TOP); // ensure consistent alignment after pausing
+  text(`Score: ${score}`, 10, 10);
 }
 
 function draw() {
