@@ -12,8 +12,9 @@ vanilla implementation.
 * Each time you successfully pass a set of pipes, your score increases.
 * The game restarts automatically when the bird collides with a pipe or the
   ground.
-* Background clouds move slowly for a sense of depth and colors of the pipes
-  change as your score grows.
+* Background clouds move across the sky and are rendered with round overlapping
+  circles for a more natural look. Pipe speed has been increased for a faster
+  game pace and colors of the pipes change as your score grows.
 * Simple sound effects are generated with the Web Audio API for flapping,
   scoring, winning milestones and losing.
 
