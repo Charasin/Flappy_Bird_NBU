@@ -1,14 +1,34 @@
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+// Flappy Bird rewritten using the p5.js library
 
-const width = canvas.width;
-const height = canvas.height;
-
-// Audio context for simple sounds
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-// Track wing animation frames
+let audioCtx;
 let flapAnimationFrames = 0;
+
+// Bird properties
+const bird = {
+  x: 50,
+  y: 0,
+  width: 20,
+  height: 20,
+  gravity: 0.4,
+  lift: -8,
+  velocity: 0
+};
+
+// Pipe properties
+const pipes = [];
+const pipeWidth = 20;
+const pipeSpeed = 1.5;
+const spawnInterval = 130;
+const gapSize = 200; // distance between top and bottom pipe
+
+// Cloud properties
+const clouds = [
+  { x: 80, y: 80, size: 20 },
+  { x: 200, y: 60, size: 25 },
+  { x: 280, y: 110, size: 18 }
+];
+let frame = 0;
+let score = 0;
 
 function playSound(freq, duration) {
   const osc = audioCtx.createOscillator();
@@ -43,92 +63,83 @@ function playVictory() {
 }
 
 function playLose() {
-  // short low tone when the player loses
   playSound(220, 0.3);
 }
 
-// Bird properties
-const bird = {
-  x: 50,
-  y: height / 2,
-  width: 20,
-  height: 20,
-  gravity: 0.4,
-  lift: -8,
-  velocity: 0
-};
-
-// Pipe properties
-const pipes = [];
-const pipeWidth = 20;
-const pipeSpeed = 1.5;
-const spawnInterval = 130;
-const gapSize = 200; // distance between top and bottom pipe
-
-// Cloud properties
-const clouds = [
-  { x: 80, y: 80, size: 20 },
-  { x: 200, y: 60, size: 25 },
-  { x: 280, y: 110, size: 18 }
-];
-let frame = 0;
-let score = 0;
+function setup() {
+  const canvas = createCanvas(320, 480);
+  canvas.id('gameCanvas');
+  canvas.parent(document.body);
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  restartGame();
+}
 
 function drawBird() {
   const centerX = bird.x + bird.width / 2;
   const centerY = bird.y + bird.height / 2;
   const radius = bird.width / 2;
+
   // body
-  ctx.fillStyle = '#ff0';
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-  ctx.fill();
+  fill('#ff0');
+  noStroke();
+  ellipse(centerX, centerY, bird.width, bird.height);
+
   // wings
   const flapping = flapAnimationFrames > 0;
-  ctx.fillStyle = '#ff0';
-  ctx.beginPath();
   if (flapping) {
-    ctx.moveTo(centerX - radius / 2, centerY - 3);
-    ctx.lineTo(centerX - radius - 4, centerY - 8);
-    ctx.lineTo(centerX - radius - 4, centerY - 3);
+    triangle(
+      centerX - radius / 2,
+      centerY - 3,
+      centerX - radius - 4,
+      centerY - 8,
+      centerX - radius - 4,
+      centerY - 3
+    );
+    triangle(
+      centerX + radius / 2,
+      centerY - 3,
+      centerX + radius + 4,
+      centerY - 8,
+      centerX + radius + 4,
+      centerY - 3
+    );
   } else {
-    ctx.moveTo(centerX - radius / 2, centerY);
-    ctx.lineTo(centerX - radius - 4, centerY - 5);
-    ctx.lineTo(centerX - radius - 4, centerY + 5);
+    triangle(
+      centerX - radius / 2,
+      centerY,
+      centerX - radius - 4,
+      centerY - 5,
+      centerX - radius - 4,
+      centerY + 5
+    );
+    triangle(
+      centerX + radius / 2,
+      centerY,
+      centerX + radius + 4,
+      centerY - 5,
+      centerX + radius + 4,
+      centerY + 5
+    );
   }
-  ctx.closePath();
-  ctx.fill();
-  ctx.beginPath();
-  if (flapping) {
-    ctx.moveTo(centerX + radius / 2, centerY - 3);
-    ctx.lineTo(centerX + radius + 4, centerY - 8);
-    ctx.lineTo(centerX + radius + 4, centerY - 3);
-  } else {
-    ctx.moveTo(centerX + radius / 2, centerY);
-    ctx.lineTo(centerX + radius + 4, centerY - 5);
-    ctx.lineTo(centerX + radius + 4, centerY + 5);
-  }
-  ctx.closePath();
-  ctx.fill();
+
   // beak
-  ctx.fillStyle = '#f90';
-  ctx.beginPath();
-  ctx.moveTo(bird.x + bird.width, centerY);
-  ctx.lineTo(bird.x + bird.width + 8, centerY - 3);
-  ctx.lineTo(bird.x + bird.width + 8, centerY + 3);
-  ctx.closePath();
-  ctx.fill();
+  fill('#f90');
+  triangle(
+    bird.x + bird.width,
+    centerY,
+    bird.x + bird.width + 8,
+    centerY - 3,
+    bird.x + bird.width + 8,
+    centerY + 3
+  );
+
   // eyes
   const eyeY = centerY - radius / 3;
   const eyeOffset = radius / 2.5;
-  ctx.fillStyle = '#fff';
-  ctx.beginPath();
-  ctx.arc(centerX + eyeOffset, eyeY, 3, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = '#000';
-  ctx.beginPath();
-  ctx.arc(centerX + eyeOffset, eyeY, 1.5, 0, Math.PI * 2);
-  ctx.fill();
+  fill('#fff');
+  ellipse(centerX + eyeOffset, eyeY, 6, 6);
+  fill('#000');
+  ellipse(centerX + eyeOffset, eyeY, 3, 3);
 }
 
 function updateBird() {
@@ -146,71 +157,60 @@ function updateBird() {
 
 function createPipe() {
   const margin = 10;
-  const top = Math.random() * (height - gapSize - margin * 2) + margin;
-  pipes.push({
-    x: width,
-    top: top,
-    bottom: top + gapSize
-  });
+  const top = random(margin, height - gapSize - margin);
+  pipes.push({ x: width, top: top, bottom: top + gapSize });
 }
 
 function updateClouds() {
   clouds.forEach(cloud => {
     cloud.x -= 0.3;
     if (cloud.x + cloud.size * 2 < 0) {
-      cloud.x = width + Math.random() * 50;
+      cloud.x = width + random(0, 50);
     }
   });
 }
 
 function drawClouds() {
-  ctx.fillStyle = '#fff';
+  fill('#fff');
+  noStroke();
   clouds.forEach(cloud => {
-    ctx.beginPath();
-    ctx.arc(cloud.x, cloud.y, cloud.size, Math.PI * 0.5, Math.PI * 1.5);
-    ctx.arc(cloud.x + cloud.size, cloud.y - cloud.size, cloud.size, Math.PI, Math.PI * 2);
-    ctx.arc(cloud.x + cloud.size * 2, cloud.y, cloud.size, Math.PI * 1.5, Math.PI * 0.5);
-    ctx.closePath();
-    ctx.fill();
+    beginShape();
+    arc(cloud.x, cloud.y, cloud.size * 2, cloud.size * 2, PI / 2, PI * 1.5);
+    arc(cloud.x + cloud.size, cloud.y - cloud.size, cloud.size * 2, cloud.size * 2, PI, TWO_PI);
+    arc(cloud.x + cloud.size * 2, cloud.y, cloud.size * 2, cloud.size * 2, PI * 1.5, PI / 2);
+    endShape(CLOSE);
   });
 }
 
 function drawPipes() {
-  let color = '#0f0';
+  let colorVal = '#0f0';
   if (score >= 30) {
-    color = 'yellow';
+    colorVal = 'yellow';
   } else if (score >= 20) {
-    color = 'blue';
+    colorVal = 'blue';
   } else if (score >= 10) {
-    color = 'red';
+    colorVal = 'red';
   }
-  ctx.fillStyle = color;
-  ctx.strokeStyle = '#000';
-  ctx.lineWidth = 1;
+
+  fill(colorVal);
+  stroke('#000');
+  strokeWeight(1);
   const radius = pipeWidth / 2;
   pipes.forEach(pipe => {
     // top pipe body
-    ctx.fillRect(pipe.x, 0, pipeWidth, pipe.top - radius);
-    ctx.strokeRect(pipe.x, 0, pipeWidth, pipe.top - radius);
+    rect(pipe.x, 0, pipeWidth, pipe.top - radius);
     // top pipe cap
-    ctx.beginPath();
-    ctx.arc(pipe.x + radius, pipe.top - radius, radius, Math.PI, 0);
-    ctx.fill();
-    ctx.stroke();
+    arc(pipe.x + radius, pipe.top - radius, pipeWidth, pipeWidth, PI, TWO_PI);
 
     // bottom pipe cap
-    ctx.beginPath();
-    ctx.arc(pipe.x + radius, pipe.bottom + radius, radius, 0, Math.PI);
-    ctx.fill();
-    ctx.stroke();
+    arc(pipe.x + radius, pipe.bottom + radius, pipeWidth, pipeWidth, 0, PI);
     // bottom pipe body
-    ctx.fillRect(pipe.x, pipe.bottom + radius, pipeWidth, height - pipe.bottom - radius);
-    ctx.strokeRect(pipe.x, pipe.bottom + radius, pipeWidth, height - pipe.bottom - radius);
+    rect(pipe.x, pipe.bottom + radius, pipeWidth, height - pipe.bottom - radius);
   });
 }
 
 function updatePipes() {
-  pipes.forEach(pipe => pipe.x -= pipeSpeed);
+  pipes.forEach(pipe => (pipe.x -= pipeSpeed));
   if (pipes.length && pipes[0].x + pipeWidth < 0) {
     pipes.shift();
     score++;
@@ -247,13 +247,16 @@ function restartGame() {
 }
 
 function drawScore() {
-  ctx.fillStyle = '#000';
-  ctx.font = 'bold 24px "Comic Sans MS", cursive';
-  ctx.fillText(`Score: ${score}`, 10, 25);
+  fill('#000');
+  noStroke();
+  textSize(24);
+  textStyle(BOLD);
+  text(`Score: ${score}`, 10, 25);
 }
 
-function gameLoop() {
-  ctx.clearRect(0, 0, width, height);
+function draw() {
+  clear();
+  background('#70c5ce');
   if (flapAnimationFrames > 0) {
     flapAnimationFrames--;
   }
@@ -269,21 +272,19 @@ function gameLoop() {
     restartGame();
   }
   frame++;
-  requestAnimationFrame(gameLoop);
 }
 
-document.addEventListener('keydown', e => {
-  if (e.code === 'Space' || e.code === 'ArrowUp') {
+function keyPressed() {
+  if (key === ' ' || keyCode === UP_ARROW) {
     bird.velocity = bird.lift;
     playFlap();
     flapAnimationFrames = 5;
   }
-});
-document.addEventListener('mousedown', () => {
+}
+
+function mousePressed() {
   bird.velocity = bird.lift;
   playFlap();
   flapAnimationFrames = 5;
-});
+}
 
-restartGame();
-requestAnimationFrame(gameLoop);

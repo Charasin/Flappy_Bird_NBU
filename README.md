@@ -1,7 +1,9 @@
 # Flappy Bird NBU
 
 This project is a lightweight browser game inspired by the classic **Flappy Bird**.
-It is implemented in plain JavaScript and rendered using an HTML5 canvas.
+It is implemented using the [p5.js](https://p5js.org/) library to handle
+drawing and animation, keeping the gameplay logic similar to the original
+vanilla implementation.
 
 ## Gameplay
 
