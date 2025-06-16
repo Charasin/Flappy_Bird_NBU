@@ -7,6 +7,9 @@ const height = canvas.height;
 // Audio context for simple sounds
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
+// Track wing animation frames
+let flapAnimationFrames = 0;
+
 function playSound(freq, duration) {
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
@@ -18,8 +21,17 @@ function playSound(freq, duration) {
   osc.stop(audioCtx.currentTime + duration);
 }
 
-function playJump() {
-  playSound(440, 0.1);
+function playFlap() {
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'triangle';
+  osc.frequency.value = 200;
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  gain.gain.setValueAtTime(1, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.25);
 }
 
 function playScore() {
@@ -67,17 +79,30 @@ function drawBird() {
   ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
   ctx.fill();
   // wings
+  const flapping = flapAnimationFrames > 0;
   ctx.fillStyle = '#ff0';
   ctx.beginPath();
-  ctx.moveTo(centerX - radius / 2, centerY);
-  ctx.lineTo(centerX - radius - 4, centerY - 5);
-  ctx.lineTo(centerX - radius - 4, centerY + 5);
+  if (flapping) {
+    ctx.moveTo(centerX - radius / 2, centerY - 3);
+    ctx.lineTo(centerX - radius - 4, centerY - 8);
+    ctx.lineTo(centerX - radius - 4, centerY - 3);
+  } else {
+    ctx.moveTo(centerX - radius / 2, centerY);
+    ctx.lineTo(centerX - radius - 4, centerY - 5);
+    ctx.lineTo(centerX - radius - 4, centerY + 5);
+  }
   ctx.closePath();
   ctx.fill();
   ctx.beginPath();
-  ctx.moveTo(centerX + radius / 2, centerY);
-  ctx.lineTo(centerX + radius + 4, centerY - 5);
-  ctx.lineTo(centerX + radius + 4, centerY + 5);
+  if (flapping) {
+    ctx.moveTo(centerX + radius / 2, centerY - 3);
+    ctx.lineTo(centerX + radius + 4, centerY - 8);
+    ctx.lineTo(centerX + radius + 4, centerY - 3);
+  } else {
+    ctx.moveTo(centerX + radius / 2, centerY);
+    ctx.lineTo(centerX + radius + 4, centerY - 5);
+    ctx.lineTo(centerX + radius + 4, centerY + 5);
+  }
   ctx.closePath();
   ctx.fill();
   // beak
@@ -218,6 +243,9 @@ function drawScore() {
 
 function gameLoop() {
   ctx.clearRect(0, 0, width, height);
+  if (flapAnimationFrames > 0) {
+    flapAnimationFrames--;
+  }
   updateClouds();
   updateBird();
   updatePipes();
@@ -235,12 +263,14 @@ function gameLoop() {
 document.addEventListener('keydown', e => {
   if (e.code === 'Space' || e.code === 'ArrowUp') {
     bird.velocity = bird.lift;
-    playJump();
+    playFlap();
+    flapAnimationFrames = 5;
   }
 });
 document.addEventListener('mousedown', () => {
   bird.velocity = bird.lift;
-  playJump();
+  playFlap();
+  flapAnimationFrames = 5;
 });
 
 restartGame();
