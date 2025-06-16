@@ -1,10 +1,10 @@
-// Flappy Bird rewritten using the p5.js library
+// Flappy Bird пренаписана с библиотеката p5.js
 
 let audioCtx;
 let flapAnimationFrames = 0;
 let pauseMusicInterval = null;
 
-// Bird properties
+// Свойства на птицата
 const bird = {
   x: 50,
   y: 0,
@@ -15,15 +15,15 @@ const bird = {
   velocity: 0
 };
 
-// Pipe properties
+// Свойства на тръбите
 const pipes = [];
-const pipeWidth = 40; // wider pipes
-// Faster movement and spawn rate for a snappier game
+const pipeWidth = 40; // по-широки тръби
+// По-бързо движение и скорост на появяване за по-динамична игра
 const pipeSpeed = 3;
 const spawnInterval = 100;
-const gapSize = 200; // distance between top and bottom pipe
+const gapSize = 200; // разстояние между горната и долната тръба
 
-// Cloud properties
+// Свойства на облаците
 const clouds = [
   { x: 80, y: 80, size: 20 },
   { x: 200, y: 60, size: 25 },
@@ -116,12 +116,12 @@ function drawBird() {
   const centerY = bird.y + bird.height / 2;
   const radius = bird.width / 2;
 
-  // body
+  // тяло
   fill('#ff0');
   noStroke();
   ellipse(centerX, centerY, bird.width, bird.height);
 
-  // wings
+  // крила
   const flapping = flapAnimationFrames > 0;
   if (flapping) {
     triangle(
@@ -159,7 +159,7 @@ function drawBird() {
     );
   }
 
-  // beak
+  // клюн
   fill('#f90');
   triangle(
     bird.x + bird.width,
@@ -170,7 +170,7 @@ function drawBird() {
     centerY + 3
   );
 
-  // eyes
+  // очи
   const eyeY = centerY - radius / 3;
   const eyeOffset = radius / 2.5;
   fill('#fff');
@@ -235,7 +235,7 @@ function updateCity() {
 
 function updateClouds() {
   clouds.forEach(cloud => {
-    cloud.x -= 0.6; // move clouds faster
+    cloud.x -= 0.6; // премества облаците по-бързо
     if (cloud.x + cloud.size * 2 < 0) {
       cloud.x = width + random(0, 50);
     }
@@ -246,7 +246,7 @@ function drawClouds() {
   fill('#fff');
   noStroke();
   clouds.forEach(cloud => {
-    // draw three overlapping circles for a round cloud
+    // рисува три припокриващи се кръга за кръгъл облак
     ellipse(cloud.x, cloud.y, cloud.size, cloud.size);
     ellipse(cloud.x + cloud.size * 0.6, cloud.y - cloud.size * 0.4, cloud.size, cloud.size);
     ellipse(cloud.x + cloud.size * 1.2, cloud.y, cloud.size, cloud.size);
@@ -259,7 +259,7 @@ function drawCity() {
   buildings.forEach(b => {
     rect(b.x, height - 40 - b.h, b.w, b.h);
 
-    // windows
+    // прозорци
     const windowW = 4;
     const windowH = 6;
     const startX = b.x + 2;
@@ -379,9 +379,9 @@ function togglePause() {
 function drawScore() {
   fill(0);
   noStroke();
-  textSize(56); // larger score display for better visibility
+  textSize(56); // по-голям дисплей на резултата за по-добра видимост
   textStyle(BOLD);
-  textAlign(LEFT, TOP); // ensure consistent alignment after pausing
+  textAlign(LEFT, TOP); // осигурява постоянно подравняване след пауза
   text(`Score: ${score}`, 10, 10);
 }
 
