@@ -26,6 +26,10 @@ function playScore() {
   playSound(660, 0.15);
 }
 
+function playVictory() {
+  playSound(880, 0.2);
+}
+
 // Bird properties
 const bird = {
   x: 50,
@@ -84,6 +88,17 @@ function drawBird() {
   ctx.lineTo(bird.x + bird.width + 8, centerY + 3);
   ctx.closePath();
   ctx.fill();
+  // eyes
+  const eyeY = centerY - radius / 3;
+  const eyeOffset = radius / 2.5;
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.arc(centerX + eyeOffset, eyeY, 3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  ctx.arc(centerX + eyeOffset, eyeY, 1.5, 0, Math.PI * 2);
+  ctx.fill();
 }
 
 function updateBird() {
@@ -131,7 +146,15 @@ function drawClouds() {
 }
 
 function drawPipes() {
-  ctx.fillStyle = '#0f0';
+  let color = '#0f0';
+  if (score >= 30) {
+    color = 'yellow';
+  } else if (score >= 20) {
+    color = 'blue';
+  } else if (score >= 10) {
+    color = 'red';
+  }
+  ctx.fillStyle = color;
   const radius = pipeWidth / 2;
   pipes.forEach(pipe => {
     // top pipe body
@@ -156,6 +179,9 @@ function updatePipes() {
     pipes.shift();
     score++;
     playScore();
+    if (score % 10 === 0) {
+      playVictory();
+    }
   }
   if (frame % spawnInterval === 0) {
     createPipe();
