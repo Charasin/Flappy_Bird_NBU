@@ -11,7 +11,8 @@ This version adds a distant city skyline, grassy plains and glossy 3D pipes for 
 * Press `Space`, `ArrowUp` or click to make the bird flap upward.
 * Avoid the green pipes that scroll from right to left.
 * Each time you successfully pass a set of pipes, your score increases.
-* Press `P` or use the on-screen button to pause and resume the game.
+* Press `P` or use the on-screen button to pause and resume the game. When
+  paused the animation loop stops completely until you resume.
 * The game restarts automatically when the bird collides with a pipe or the
   ground.
 * When paused a short tune plays until the game is resumed.
