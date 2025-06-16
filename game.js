@@ -16,7 +16,7 @@ const bird = {
 
 // Pipe properties
 const pipes = [];
-const pipeWidth = 20;
+const pipeWidth = 40; // wider pipes
 // Faster movement and spawn rate for a snappier game
 const pipeSpeed = 3;
 const spawnInterval = 100;
@@ -30,6 +30,8 @@ const clouds = [
 ];
 let frame = 0;
 let score = 0;
+const buildings = [];
+let paused = false;
 
 function playSound(freq, duration) {
   const osc = audioCtx.createOscillator();
@@ -73,6 +75,11 @@ function setup() {
   canvas.parent(document.body);
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   restartGame();
+  createCity();
+  const btn = document.getElementById('pauseBtn');
+  if (btn) {
+    btn.addEventListener('click', togglePause);
+  }
 }
 
 function drawBird() {
@@ -162,6 +169,16 @@ function createPipe() {
   pipes.push({ x: width, top: top, bottom: top + gapSize });
 }
 
+function createCity() {
+  let x = 0;
+  while (x < width) {
+    const w = random(20, 40);
+    const h = random(40, 100);
+    buildings.push({ x, w, h });
+    x += w + random(5, 15);
+  }
+}
+
 function updateClouds() {
   clouds.forEach(cloud => {
     cloud.x -= 0.6; // move clouds faster
@@ -182,6 +199,20 @@ function drawClouds() {
   });
 }
 
+function drawCity() {
+  fill('#666');
+  noStroke();
+  buildings.forEach(b => {
+    rect(b.x, height - 40 - b.h, b.w, b.h);
+  });
+}
+
+function drawPlains() {
+  fill('#3cba54');
+  noStroke();
+  rect(0, height - 40, width, 40);
+}
+
 function drawPipes() {
   let colorVal = '#0f0';
   if (score >= 30) {
@@ -192,20 +223,40 @@ function drawPipes() {
     colorVal = 'red';
   }
 
-  fill(colorVal);
-  stroke('#000');
-  strokeWeight(1);
   const radius = pipeWidth / 2;
   pipes.forEach(pipe => {
-    // top pipe body
-    rect(pipe.x, 0, pipeWidth, pipe.top - radius);
-    // top pipe cap
-    arc(pipe.x + radius, pipe.top - radius, pipeWidth, pipeWidth, PI, TWO_PI);
+    const ctx = drawingContext;
+    const grad = ctx.createLinearGradient(pipe.x, 0, pipe.x + pipeWidth, 0);
+    grad.addColorStop(0, colorVal);
+    grad.addColorStop(0.5, '#ffffff');
+    grad.addColorStop(1, colorVal);
+    ctx.fillStyle = grad;
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 1;
 
-    // bottom pipe cap
-    arc(pipe.x + radius, pipe.bottom + radius, pipeWidth, pipeWidth, 0, PI);
-    // bottom pipe body
-    rect(pipe.x, pipe.bottom + radius, pipeWidth, height - pipe.bottom - radius);
+    ctx.beginPath();
+    ctx.rect(pipe.x, 0, pipeWidth, pipe.top - radius);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(pipe.x + radius, pipe.top - radius, radius, Math.PI, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(pipe.x + radius, pipe.bottom + radius, radius, 0, Math.PI);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.rect(pipe.x, pipe.bottom + radius, pipeWidth, height - pipe.bottom - radius);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.fillRect(pipe.x + pipeWidth * 0.15, 0, pipeWidth * 0.2, pipe.top - radius);
+    ctx.fillRect(pipe.x + pipeWidth * 0.15, pipe.bottom + radius, pipeWidth * 0.2, height - pipe.bottom - radius);
   });
 }
 
@@ -246,6 +297,14 @@ function restartGame() {
   createPipe();
 }
 
+function togglePause() {
+  paused = !paused;
+  const btn = document.getElementById('pauseBtn');
+  if (btn) {
+    btn.textContent = paused ? 'Resume' : 'Pause';
+  }
+}
+
 function drawScore() {
   fill('#000');
   noStroke();
@@ -257,25 +316,40 @@ function drawScore() {
 function draw() {
   clear();
   background('#70c5ce');
+  drawCity();
+  drawPlains();
   if (flapAnimationFrames > 0) {
     flapAnimationFrames--;
   }
-  updateClouds();
-  updateBird();
-  updatePipes();
+  if (!paused) {
+    updateClouds();
+    updateBird();
+    updatePipes();
+  }
   drawClouds();
   drawBird();
   drawPipes();
   drawScore();
-  if (detectCollision()) {
-    playLose();
-    restartGame();
+  if (!paused) {
+    if (detectCollision()) {
+      playLose();
+      restartGame();
+    }
+    frame++;
+  } else {
+    fill('#000');
+    textSize(32);
+    textAlign(CENTER, CENTER);
+    text('PAUSED', width / 2, height / 2);
   }
-  frame++;
 }
 
 function keyPressed() {
-  if (key === ' ' || keyCode === UP_ARROW) {
+  if (key === 'p' || key === 'P') {
+    togglePause();
+    return;
+  }
+  if (!paused && (key === ' ' || keyCode === UP_ARROW)) {
     bird.velocity = bird.lift;
     playFlap();
     flapAnimationFrames = 5;
@@ -283,8 +357,10 @@ function keyPressed() {
 }
 
 function mousePressed() {
-  bird.velocity = bird.lift;
-  playFlap();
-  flapAnimationFrames = 5;
+  if (!paused) {
+    bird.velocity = bird.lift;
+    playFlap();
+    flapAnimationFrames = 5;
+  }
 }
 
