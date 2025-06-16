@@ -42,6 +42,11 @@ function playVictory() {
   playSound(880, 0.2);
 }
 
+function playLose() {
+  // short low tone when the player loses
+  playSound(220, 0.3);
+}
+
 // Bird properties
 const bird = {
   x: 50,
@@ -180,21 +185,27 @@ function drawPipes() {
     color = 'red';
   }
   ctx.fillStyle = color;
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 1;
   const radius = pipeWidth / 2;
   pipes.forEach(pipe => {
     // top pipe body
     ctx.fillRect(pipe.x, 0, pipeWidth, pipe.top - radius);
+    ctx.strokeRect(pipe.x, 0, pipeWidth, pipe.top - radius);
     // top pipe cap
     ctx.beginPath();
     ctx.arc(pipe.x + radius, pipe.top - radius, radius, Math.PI, 0);
     ctx.fill();
+    ctx.stroke();
 
     // bottom pipe cap
     ctx.beginPath();
     ctx.arc(pipe.x + radius, pipe.bottom + radius, radius, 0, Math.PI);
     ctx.fill();
+    ctx.stroke();
     // bottom pipe body
     ctx.fillRect(pipe.x, pipe.bottom + radius, pipeWidth, height - pipe.bottom - radius);
+    ctx.strokeRect(pipe.x, pipe.bottom + radius, pipeWidth, height - pipe.bottom - radius);
   });
 }
 
@@ -254,6 +265,7 @@ function gameLoop() {
   drawPipes();
   drawScore();
   if (detectCollision()) {
+    playLose();
     restartGame();
   }
   frame++;
