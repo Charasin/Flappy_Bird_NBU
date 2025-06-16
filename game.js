@@ -17,8 +17,9 @@ const bird = {
 // Pipe properties
 const pipes = [];
 const pipeWidth = 20;
-const pipeSpeed = 1.5;
-const spawnInterval = 130;
+// Faster movement and spawn rate for a snappier game
+const pipeSpeed = 3;
+const spawnInterval = 100;
 const gapSize = 200; // distance between top and bottom pipe
 
 // Cloud properties
@@ -163,7 +164,7 @@ function createPipe() {
 
 function updateClouds() {
   clouds.forEach(cloud => {
-    cloud.x -= 0.3;
+    cloud.x -= 0.6; // move clouds faster
     if (cloud.x + cloud.size * 2 < 0) {
       cloud.x = width + random(0, 50);
     }
@@ -174,11 +175,10 @@ function drawClouds() {
   fill('#fff');
   noStroke();
   clouds.forEach(cloud => {
-    beginShape();
-    arc(cloud.x, cloud.y, cloud.size * 2, cloud.size * 2, PI / 2, PI * 1.5);
-    arc(cloud.x + cloud.size, cloud.y - cloud.size, cloud.size * 2, cloud.size * 2, PI, TWO_PI);
-    arc(cloud.x + cloud.size * 2, cloud.y, cloud.size * 2, cloud.size * 2, PI * 1.5, PI / 2);
-    endShape(CLOSE);
+    // draw three overlapping circles for a round cloud
+    ellipse(cloud.x, cloud.y, cloud.size, cloud.size);
+    ellipse(cloud.x + cloud.size * 0.6, cloud.y - cloud.size * 0.4, cloud.size, cloud.size);
+    ellipse(cloud.x + cloud.size * 1.2, cloud.y, cloud.size, cloud.size);
   });
 }
 
