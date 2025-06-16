@@ -10,21 +10,44 @@ const bird = {
   y: height / 2,
   width: 20,
   height: 20,
-  gravity: 0.6,
-  lift: -10,
+  gravity: 0.4,
+  lift: -12,
   velocity: 0
 };
 
 // Pipe properties
 const pipes = [];
 const pipeWidth = 40;
-const pipeGap = 120;
+const pipeGap = 150;
+const pipeSpeed = 1.5;
+const spawnInterval = 130;
+
+// Cloud properties
+const clouds = [
+  { x: 80, y: 80, size: 20 },
+  { x: 200, y: 60, size: 25 },
+  { x: 280, y: 110, size: 18 }
+];
 let frame = 0;
 let score = 0;
 
 function drawBird() {
+  const centerX = bird.x + bird.width / 2;
+  const centerY = bird.y + bird.height / 2;
+  const radius = bird.width / 2;
+  // body
   ctx.fillStyle = '#ff0';
-  ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  ctx.fill();
+  // beak
+  ctx.fillStyle = '#f90';
+  ctx.beginPath();
+  ctx.moveTo(bird.x + bird.width, centerY);
+  ctx.lineTo(bird.x + bird.width + 8, centerY - 3);
+  ctx.lineTo(bird.x + bird.width + 8, centerY + 3);
+  ctx.closePath();
+  ctx.fill();
 }
 
 function updateBird() {
@@ -49,23 +72,54 @@ function createPipe() {
   });
 }
 
+function updateClouds() {
+  clouds.forEach(cloud => {
+    cloud.x -= 0.3;
+    if (cloud.x + cloud.size * 2 < 0) {
+      cloud.x = width + Math.random() * 50;
+    }
+  });
+}
+
+function drawClouds() {
+  ctx.fillStyle = '#fff';
+  clouds.forEach(cloud => {
+    ctx.beginPath();
+    ctx.arc(cloud.x, cloud.y, cloud.size, Math.PI * 0.5, Math.PI * 1.5);
+    ctx.arc(cloud.x + cloud.size, cloud.y - cloud.size, cloud.size, Math.PI, Math.PI * 2);
+    ctx.arc(cloud.x + cloud.size * 2, cloud.y, cloud.size, Math.PI * 1.5, Math.PI * 0.5);
+    ctx.closePath();
+    ctx.fill();
+  });
+}
+
 function drawPipes() {
   ctx.fillStyle = '#0f0';
+  const radius = pipeWidth / 2;
   pipes.forEach(pipe => {
-    // top pipe
-    ctx.fillRect(pipe.x, 0, pipeWidth, pipe.top);
-    // bottom pipe
-    ctx.fillRect(pipe.x, pipe.bottom, pipeWidth, height - pipe.bottom);
+    // top pipe body
+    ctx.fillRect(pipe.x, 0, pipeWidth, pipe.top - radius);
+    // top pipe cap
+    ctx.beginPath();
+    ctx.arc(pipe.x + radius, pipe.top - radius, radius, Math.PI, 0);
+    ctx.fill();
+
+    // bottom pipe cap
+    ctx.beginPath();
+    ctx.arc(pipe.x + radius, pipe.bottom + radius, radius, 0, Math.PI);
+    ctx.fill();
+    // bottom pipe body
+    ctx.fillRect(pipe.x, pipe.bottom + radius, pipeWidth, height - pipe.bottom - radius);
   });
 }
 
 function updatePipes() {
-  pipes.forEach(pipe => pipe.x -= 2);
+  pipes.forEach(pipe => pipe.x -= pipeSpeed);
   if (pipes.length && pipes[0].x + pipeWidth < 0) {
     pipes.shift();
     score++;
   }
-  if (frame % 100 === 0) {
+  if (frame % spawnInterval === 0) {
     createPipe();
   }
 }
@@ -91,8 +145,10 @@ function drawScore() {
 
 function gameLoop() {
   ctx.clearRect(0, 0, width, height);
+  updateClouds();
   updateBird();
   updatePipes();
+  drawClouds();
   drawBird();
   drawPipes();
   drawScore();
