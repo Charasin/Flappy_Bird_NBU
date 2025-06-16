@@ -364,8 +364,11 @@ function togglePause() {
   paused = !paused;
   if (paused) {
     playPauseMusic();
+    noLoop();
+    redraw();
   } else {
     stopPauseMusic();
+    loop();
   }
   const btn = document.getElementById('pauseBtn');
   if (btn) {
@@ -374,7 +377,7 @@ function togglePause() {
 }
 
 function drawScore() {
-  fill('#000');
+  fill(0);
   noStroke();
   textSize(56); // larger score display for better visibility
   textStyle(BOLD);
@@ -407,7 +410,7 @@ function draw() {
     }
     frame++;
   } else {
-    fill('#000');
+    fill(0);
     textSize(32);
     textAlign(CENTER, CENTER);
     text('PAUSED', width / 2, height / 2);
