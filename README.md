@@ -2,6 +2,8 @@
 
 This project is a lightweight browser game inspired by the classic **Flappy Bird**.
 It is implemented in plain JavaScript and rendered using an HTML5 canvas.
+No Java libraries are used; the game relies solely on JavaScript and the
+browser's built‑in Web APIs.
 
 ## Gameplay
 
