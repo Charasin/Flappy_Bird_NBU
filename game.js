@@ -4,6 +4,28 @@ const ctx = canvas.getContext('2d');
 const width = canvas.width;
 const height = canvas.height;
 
+// Audio context for simple sounds
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playSound(freq, duration) {
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'square';
+  osc.frequency.value = freq;
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + duration);
+}
+
+function playJump() {
+  playSound(440, 0.1);
+}
+
+function playScore() {
+  playSound(660, 0.15);
+}
+
 // Bird properties
 const bird = {
   x: 50,
@@ -18,9 +40,9 @@ const bird = {
 // Pipe properties
 const pipes = [];
 const pipeWidth = 20;
-const pipeEdgeSize = 40;
 const pipeSpeed = 1.5;
 const spawnInterval = 130;
+const gapSize = 200; // distance between top and bottom pipe
 
 // Cloud properties
 const clouds = [
@@ -39,6 +61,20 @@ function drawBird() {
   ctx.fillStyle = '#ff0';
   ctx.beginPath();
   ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  ctx.fill();
+  // wings
+  ctx.fillStyle = '#ff0';
+  ctx.beginPath();
+  ctx.moveTo(centerX - radius / 2, centerY);
+  ctx.lineTo(centerX - radius - 4, centerY - 5);
+  ctx.lineTo(centerX - radius - 4, centerY + 5);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(centerX + radius / 2, centerY);
+  ctx.lineTo(centerX + radius + 4, centerY - 5);
+  ctx.lineTo(centerX + radius + 4, centerY + 5);
+  ctx.closePath();
   ctx.fill();
   // beak
   ctx.fillStyle = '#f90';
@@ -64,11 +100,12 @@ function updateBird() {
 }
 
 function createPipe() {
-  const topHeight = pipeEdgeSize;
+  const margin = 10;
+  const top = Math.random() * (height - gapSize - margin * 2) + margin;
   pipes.push({
     x: width,
-    top: topHeight,
-    bottom: height - pipeEdgeSize
+    top: top,
+    bottom: top + gapSize
   });
 }
 
@@ -118,6 +155,7 @@ function updatePipes() {
   if (pipes.length && pipes[0].x + pipeWidth < 0) {
     pipes.shift();
     score++;
+    playScore();
   }
   if (frame % spawnInterval === 0) {
     createPipe();
@@ -137,9 +175,18 @@ function detectCollision() {
   return false;
 }
 
+function restartGame() {
+  pipes.length = 0;
+  bird.y = height / 2;
+  bird.velocity = 0;
+  score = 0;
+  frame = 0;
+  createPipe();
+}
+
 function drawScore() {
   ctx.fillStyle = '#000';
-  ctx.font = '20px sans-serif';
+  ctx.font = 'bold 24px "Comic Sans MS", cursive';
   ctx.fillText(`Score: ${score}`, 10, 25);
 }
 
@@ -153,9 +200,7 @@ function gameLoop() {
   drawPipes();
   drawScore();
   if (detectCollision()) {
-    alert('Game Over! Your score: ' + score);
-    document.location.reload();
-    return;
+    restartGame();
   }
   frame++;
   requestAnimationFrame(gameLoop);
@@ -164,11 +209,13 @@ function gameLoop() {
 document.addEventListener('keydown', e => {
   if (e.code === 'Space' || e.code === 'ArrowUp') {
     bird.velocity = bird.lift;
+    playJump();
   }
 });
 document.addEventListener('mousedown', () => {
   bird.velocity = bird.lift;
+  playJump();
 });
 
-createPipe();
+restartGame();
 requestAnimationFrame(gameLoop);
