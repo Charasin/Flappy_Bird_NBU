@@ -40,7 +40,7 @@ additional dependencies.
 ## Recent Updates
 
 * Bird now also loses when touching the ground.
-* Score display is black and 30% larger for better visibility.
+* Score display is black and uses an even larger font for better visibility.
 * A short melody plays while the game is paused.
 
 Latest changes introduced in commit `142741e`.
