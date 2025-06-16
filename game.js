@@ -11,14 +11,14 @@ const bird = {
   width: 20,
   height: 20,
   gravity: 0.4,
-  lift: -12,
+  lift: -8,
   velocity: 0
 };
 
 // Pipe properties
 const pipes = [];
-const pipeWidth = 40;
-const pipeGap = 150;
+const pipeWidth = 20;
+const pipeEdgeSize = 40;
 const pipeSpeed = 1.5;
 const spawnInterval = 130;
 
@@ -64,11 +64,11 @@ function updateBird() {
 }
 
 function createPipe() {
-  const topHeight = Math.random() * (height - pipeGap - 60) + 20;
+  const topHeight = pipeEdgeSize;
   pipes.push({
     x: width,
     top: topHeight,
-    bottom: topHeight + pipeGap
+    bottom: height - pipeEdgeSize
   });
 }
 
